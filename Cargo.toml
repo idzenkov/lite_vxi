@@ -1,0 +1,20 @@
+[package]
+name = "server"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+freeswitch-esl = "0.1.0"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+tracing-appender = "0.2"
+quick-xml = "0.31.0"
+clap = { version = "4.5.1", features = ["derive", "env"] }
+dotenv = "0.15.0"
+
+[lib]
+name = "lib"
+path = "src/lib.rs"

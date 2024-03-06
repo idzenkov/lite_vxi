@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ccxml PUBLIC "-//W3C//DTD CCXML 1.0//EN" "http://www.w3.org/TR/ccxml/ccxml.dtd">
+<ccxml version="1.0" xmlns="http://www.w3.org/2002/09/ccxml">
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="-1"/>
+
+<!-- This is a HelloWorld ccxml sample page.  It shows the basic
+ccxml framework as well as event processing for an incoming call and simple
+dialog processing. The message is played back via a static VXML page to the caller.
+ -->
+	   <script>
+	   function objectToString(  obj ) { 
+		   var result = " [\n"; 
+		   result += extractprops( "", obj); 
+		   result += " ]";
+		   return result; 
+	   } 
+
+	   function extractprops ( parent, obj ) { 
+		   var prop, name, result = ""; 
+		   var count = 1; 
+		   if ( typeof ( obj ) == "object" ) { 
+			   for ( prop in obj ) { 
+				   name = parent + prop; 
+				   if ( typeof ( obj [ prop ] ) == "object" ) { 
+					   result += extractprops( name+".", obj [ prop ] );
+				   } else { 
+					   result +=   " " + name + ":" + obj [ prop ] + "\n"; 
+				   } 
+				   count = count + 1; 
+			   } 
+		   } else { 
+			   if (obj == undefined ) { 
+				   result +=  "___undefined"; 
+			   } else { 
+				   result +=  obj; 
+			   } 
+		   } 
+		   return result; 
+	   } 
+   </script>
+<var name="in_connectionid"/> <!-- The connectionid of the incoming call. -->
+<var name="dialogid"/>        <!-- The id of the dialog we will run. -->
+
+<!-- Initialize the state for this page -->
+<var name="state" expr="'init'"/>
+
+<!-- Possible states:
+	init 	- The initialized state, accept the call.  Since this is the only state
+	          you could not use state at all.
+-->
+
+<!-- Event processor -->
+  <eventprocessor statevariable="state">
+	
+	<!-- STATE: init -->
+	
+ 	<!-- 
+ 		Send the launchresponse in case we were started from the launchccxml web service.
+	 -->
+   <transition event="ccxml.loaded" state="init" >
+        <log expr="'-- ' + event$.name +' -- [' + state +']'"/>
+    	<log expr="'-- eventdata ' + objectToString(event$)"/>
+        <var name="status" expr="'success'"/>
+        <send name="'avaya.launchresponse'" targettype="'avaya_platform'" target="session.id" namelist="status"/>
+    </transition>
+	
+	<!-- Prepare a dialog to play HelloWorld message back to caller as the call is connected  
+		 Path to the dialog is the full path and would need to be changed per system.
+		 You may choose to use a jsp page to make that path dynamic (see further examples)
+	 -->
+    <transition event="connection.alerting"  state="init">
+        <log expr="'-- ' + event$.name +' -- [' + state +']'"/>
+        <log expr="'   eventdata... \n' + objectToString(event$)"/>
+        <assign name="in_connectionid" expr="event$.connectionid"/>
+        <dialogprepare type="'application/voicexml+xml'"
+                       connectionid = "in_connectionid" 
+                       src="'http://localhost:8080/HelloWorldCCXML/vxml/HelloWorldCCXML.vxml'" />		
+    </transition>
+		
+	<!-- Dialog is prepared, accept the call-->		
+    <transition event="dialog.prepared"  state="init">
+        <log expr="'-- ' + event$.name +' -- [' + state +']'"/>
+        <log expr="'   eventdata... \n' + objectToString(event$)"/>
+	    <assign name="dialogid" expr="event$.dialogid"/>
+		<accept connectionid="in_connectionid"/>
+    </transition>
+
+	<!-- Call is now connected, Start the dialog -->
+    <transition event="connection.connected"  state="init">
+        <log expr="'-- ' + event$.name +' -- [' + state +']'"/>
+        <log expr="'   eventdata... \n' + objectToString(event$)"/>
+        <dialogstart prepareddialogid="dialogid" connectionid="in_connectionid"/>
+    </transition>
+ 
+    <transition event="dialog.started"  state="init">
+        <log expr="'-- ' + event$.name +' -- [' + state +']'"/>
+        <log expr="'   eventdata... \n' + objectToString(event$)"/>
+    </transition>
+
+	<!-- Finished playing the dialog, now exit   -->
+    <transition event="dialog.exit"  state="init">
+        <log expr="'-- ' + event$.name +' -- [' + state +']'"/>
+        <log expr="'   eventdata... \n' + objectToString(event$)"/>
+		<exit expr="'DIALOG EXITED'"/>
+    </transition>
+    
+    <transition event="error.dialog.notprepared"  state="init">
+        <log expr="'-- ' + event$.name +' -- [' + state +']'"/>
+        <log expr="'   eventdata... \n' + objectToString(event$)"/>
+		<reject connectionid="in_connectionid"/>
+    </transition>
+
+    <transition event="error.dialog.notstarted"  state="init">
+        <log expr="'-- ' + event$.name +' -- [' + state +']'"/>
+        <log expr="'   eventdata... \n' + objectToString(event$)"/>
+		<disconnect connectionid="in_connectionid" reason="event$.reason" />
+    </transition>
+
+	<!-- STATE: ANYSTATE. Catch all, aids in debugging and to see the missed events -->
+	<transition event="ccxml.exit" >
+        <log expr="'-- ' + event$.name +' -- [' + state +']'"/>
+        <log expr="'   eventdata... \n' + objectToString(event$)"/>
+	</transition>
+
+	<transition event="ccxml.kill" >
+        <log expr="'-- ' + event$.name +' -- [' + state +']'"/>
+        <log expr="'   eventdata... \n' + objectToString(event$)"/>
+	</transition>
+
+    <transition event="" >
+        <log expr="'-- missed ' + event$.name +' -- [' + state +']'"/>
+        <log expr="'   eventdata... \n' + objectToString(event$)"/>
+    </transition>
+
+  </eventprocessor>
+</ccxml>

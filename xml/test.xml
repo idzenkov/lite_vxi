@@ -1,0 +1,6 @@
+<transition state="init" event="connection.connected">
+      <log expr="'Houston, we have liftoff.'"/>
+      <dialogstart src="'dialog.vxml'"/>
+      <assign name="state0" expr="'dialogActive'" />
+      <var name="'asdasdasdasd'" expr="'jija jija jija'"/>
+</transition>
