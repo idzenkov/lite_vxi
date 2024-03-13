@@ -1,0 +1,4 @@
+<events>
+    <event external="CHANNEL_DATA">connection.connected </event>
+    <event external="CHANNEL_PARK">connection.alerting<event/>
+</events>

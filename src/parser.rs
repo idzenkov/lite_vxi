@@ -165,7 +165,7 @@ fn init(e: BytesStart<'_>) -> Var {
     var
 }
 
-fn log(log: Log) {
+pub fn log(log: Log) {
     tracing::info!("{:#?}", log);
 }
 
@@ -173,8 +173,8 @@ fn assign(var_set: &HashSet<Var>, file_map: &HashMap<Transition, Vec<Child>>) {}
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Transition {
-    event: String,
-    state: String,
+    pub event: String,
+    pub state: String,
     //log: Vec<Log>,
     //var: Vec<Var>,
 }
@@ -187,14 +187,14 @@ pub struct Log {
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Var {
-    name: String,
-    value: String,
+    pub name: String,
+    pub value: String,
 }
 
 #[derive(Debug, Clone)]
 pub struct Assign {
-    name: String,
-    value: String,
+    pub name: String,
+    pub value: String,
 }
 
 #[derive(Debug, Clone)]
